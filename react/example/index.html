@@ -60,6 +60,10 @@
     .video-wrapper {
       margin-bottom: 24px;
     }
+
+    .audio-wrapper {
+      margin-bottom: 24px;
+    }
   </style>
 </head>
 <body>
@@ -68,8 +72,8 @@
     <p class="subtitle">媒体播放组件库示例 - Apron Design 分支项目</p>
 
     <div class="section">
-      <h2>单个视频</h2>
-      <p>使用 src 属性指定视频源</p>
+      <h2>单个视频（带 CC 字幕）</h2>
+      <p>使用 src 属性指定视频源，cc 属性添加字幕。点击设置按钮（⚙️）可以开关字幕。</p>
       <div id="single-video"></div>
     </div>
 
@@ -80,9 +84,33 @@
     </div>
 
     <div class="section">
-      <h2>播放列表（完整模式）</h2>
-      <p>使用 source 属性传入对象数组，包含标题、摘要、封面等信息</p>
+      <h2>播放列表（完整模式 + CC 字幕）</h2>
+      <p>使用 source 属性传入对象数组，包含标题、摘要、封面、字幕等信息。第一个视频带有字幕。</p>
       <div id="playlist-full"></div>
+    </div>
+
+    <div class="section">
+      <h2>单个音频（无封面）</h2>
+      <p>使用 src 属性指定音频源，无封面时控制区域居中显示播放按钮</p>
+      <div id="single-audio"></div>
+    </div>
+
+    <div class="section">
+      <h2>单个音频（有封面）</h2>
+      <p>使用 src 和 poster 属性，有封面时显示封面图，控制区域有渐变背景</p>
+      <div id="single-audio-poster"></div>
+    </div>
+
+    <div class="section">
+      <h2>音频播放列表（简单模式）</h2>
+      <p>使用 source 属性传入字符串数组，可以切换上一首和下一首</p>
+      <div id="audio-playlist-simple"></div>
+    </div>
+
+    <div class="section">
+      <h2>音频播放列表（完整模式）</h2>
+      <p>使用 source 属性传入对象数组，包含标题、摘要、封面等信息</p>
+      <div id="audio-playlist-full"></div>
     </div>
   </div>
 

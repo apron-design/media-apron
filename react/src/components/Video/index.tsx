@@ -9,7 +9,6 @@ import {
   SettingsIcon,
   PlaylistIcon,
   ImmersiveIcon,
-  ExitImmersiveIcon,
   FullscreenIcon,
   VideoPlaceholderIcon,
 } from './icons';
@@ -22,6 +21,7 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
   const {
     className,
     src,
+    cc,
     source,
     primaryColor = '#333333',
     style,
@@ -34,6 +34,8 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
   const progressHoverRef = useRef<HTMLDivElement>(null);
   const progressPreviewRef = useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const shouldResumePlayingRef = useRef(false);
+  const mouseLeaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -47,6 +49,7 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
   const [isImmersive, setIsImmersive] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [showSubtitles, setShowSubtitles] = useState(true);
 
   // 解析播放列表
   const playlist = React.useMemo(() => {
@@ -97,10 +100,14 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
 
   // 获取当前字幕
   const currentCC = React.useMemo(() => {
+    // 如果使用 src 播放，使用 props 传入的 cc
+    if (src && cc) return cc;
+    
+    // 如果使用 source 播放，从 playlist 中获取
     if (!playlist) return undefined;
     const current = playlist[currentIndex];
-    return current?.cc;
-  }, [playlist, currentIndex]);
+    return (current as VideoSource)?.cc;
+  }, [src, cc, playlist, currentIndex]);
 
   // 格式化时间
   const formatTime = (seconds: number) => {
@@ -132,8 +139,20 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
   // 播放下一个
   const playNext = useCallback(() => {
     if (!playlist || currentIndex >= playlist.length - 1) return;
+    // 记录当前播放状态
+    shouldResumePlayingRef.current = isPlaying;
     setCurrentIndex(prev => prev + 1);
-  }, [playlist, currentIndex]);
+  }, [playlist, currentIndex, isPlaying]);
+
+  // 切换播放源
+  const handlePlaylistItemClick = useCallback((index: number) => {
+    if (index === currentIndex) return;
+    
+    // 记录当前播放状态
+    shouldResumePlayingRef.current = isPlaying;
+    setCurrentIndex(index);
+    setShowPlaylist(false); // 切换后收起播放列表
+  }, [currentIndex, isPlaying]);
 
   // 切换静音
   const toggleMute = useCallback(() => {
@@ -166,6 +185,12 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
     
     video.playbackRate = rate;
     setPlaybackRate(rate);
+    setShowSettings(false);
+  }, []);
+
+  // 切换字幕显示
+  const toggleSubtitles = useCallback(() => {
+    setShowSubtitles(prev => !prev);
     setShowSettings(false);
   }, []);
 
@@ -259,7 +284,14 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
     };
     const handleWaiting = () => setIsLoading(true);
     const handleSeeking = () => setIsLoading(true);
-    const handleCanPlay = () => setIsLoading(false);
+    const handleCanPlay = () => {
+      setIsLoading(false);
+      // 如果之前正在播放，恢复播放状态
+      if (shouldResumePlayingRef.current) {
+        video.play().catch(() => {});
+        shouldResumePlayingRef.current = false;
+      }
+    };
     const handlePlaying = () => setIsLoading(false);
     const handleLoadStart = () => setIsLoading(true);
 
@@ -297,11 +329,24 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
 
     const handleMouseMove = () => {
       resetControlsTimeout();
+      // 清除鼠标移出的延迟隐藏
+      if (mouseLeaveTimeoutRef.current) {
+        clearTimeout(mouseLeaveTimeoutRef.current);
+        mouseLeaveTimeoutRef.current = null;
+      }
     };
 
     const handleMouseLeave = () => {
+      // 清除之前的定时器
+      if (mouseLeaveTimeoutRef.current) {
+        clearTimeout(mouseLeaveTimeoutRef.current);
+      }
+      // 延迟1秒后隐藏控制栏
       if (isPlaying) {
-        setShowControls(false);
+        mouseLeaveTimeoutRef.current = setTimeout(() => {
+          setShowControls(false);
+          mouseLeaveTimeoutRef.current = null;
+        }, 1000);
       }
     };
 
@@ -313,6 +358,9 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
       container.removeEventListener('mouseleave', handleMouseLeave);
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current);
+      }
+      if (mouseLeaveTimeoutRef.current) {
+        clearTimeout(mouseLeaveTimeoutRef.current);
       }
     };
   }, [isPlaying, resetControlsTimeout]);
@@ -341,12 +389,45 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
+  // 控制字幕显示/隐藏
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !currentCC) return;
+
+    const setupSubtitles = () => {
+      const textTracks = video.textTracks;
+      if (textTracks && textTracks.length > 0) {
+        const track = textTracks[0];
+        track.mode = showSubtitles ? 'showing' : 'hidden';
+      }
+    };
+
+    // 立即尝试设置
+    setupSubtitles();
+
+    // 监听字幕轨道加载
+    const handleLoadedMetadata = () => {
+      setupSubtitles();
+    };
+
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    
+    // 如果字幕轨道已经加载，直接设置
+    if (video.textTracks && video.textTracks.length > 0) {
+      setupSubtitles();
+    }
+
+    return () => {
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+    };
+  }, [showSubtitles, currentCC, currentIndex]);
+
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
     <div
       ref={containerRef}
-      className={`${styles.videoContainer} ${isImmersive ? styles.immersive : ''} ${className || ''}`}
+      className={`${styles.videoContainer} ${isImmersive ? styles.immersive : ''} ${!showControls ? styles.controlsHidden : ''} ${className || ''}`}
       style={{
         ...style,
         '--primary-color': primaryColor,
@@ -354,11 +435,11 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
     >
       <video
         ref={(el) => {
-          videoRef.current = el;
+          (videoRef as React.MutableRefObject<HTMLVideoElement | null>).current = el;
           if (typeof ref === 'function') {
             ref(el);
           } else if (ref) {
-            ref.current = el;
+            (ref as React.MutableRefObject<HTMLVideoElement | null>).current = el;
           }
         }}
         className={styles.video}
@@ -366,7 +447,15 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
         onClick={togglePlay}
         {...restProps}
       >
-        {currentCC && <track kind="subtitles" src={currentCC} />}
+        {currentCC && (
+          <track
+            kind="subtitles"
+            src={currentCC}
+            srcLang="zh"
+            label="中文字幕"
+            default={showSubtitles}
+          />
+        )}
       </video>
 
       <div className={`${styles.loading} ${isLoading ? styles.visible : ''}`}>
@@ -456,8 +545,11 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
 
               <div className={`${styles.settingsMenu} ${showSettings ? styles.visible : ''}`}>
                 {currentCC && (
-                  <div className={styles.menuItem}>
-                    CC 字幕
+                  <div
+                    className={`${styles.menuItem} ${showSubtitles ? styles.selected : ''}`}
+                    onClick={toggleSubtitles}
+                  >
+                    CC 字幕 {showSubtitles ? '✓' : ''}
                   </div>
                 )}
                 <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', padding: '4px 12px' }}>
@@ -486,11 +578,12 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
             )}
 
             <button
+              key={isImmersive ? 'exit-immersive' : 'immersive'}
               className={`${styles.button} ${styles.iconButton}`}
               onClick={toggleImmersive}
               title={isImmersive ? '退出沉浸模式' : '沉浸模式'}
             >
-              {isImmersive ? <ExitImmersiveIcon /> : <ImmersiveIcon />}
+              <ImmersiveIcon />
             </button>
 
             <button
@@ -504,40 +597,51 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
         </div>
       </div>
 
+      {/* 播放列表展开时的模糊遮罩 */}
+      {playlist && playlist.length > 0 && showPlaylist && (
+        <div 
+          className={styles.playlistOverlay}
+          onClick={() => setShowPlaylist(false)}
+        />
+      )}
+
       {playlist && playlist.length > 0 && (
         <div className={`${styles.playlist} ${showPlaylist ? styles.visible : ''}`}>
           <div className={styles.playlistHeader}>
             播放列表
           </div>
-          {playlist.map((item, index) => (
-            <div
-              key={index}
-              className={`${styles.playlistItem} ${index === currentIndex ? styles.active : ''}`}
-              onClick={() => setCurrentIndex(index)}
-            >
-              {item.poster ? (
-                <img
-                  src={item.poster}
-                  alt={item.title}
-                  className={styles.playlistItemThumb}
-                />
-              ) : (
-                <div className={styles.playlistItemPlaceholder}>
-                  <VideoPlaceholderIcon />
-                </div>
-              )}
-              <div className={styles.playlistItemContent}>
-                <div className={styles.playlistItemTitle}>
-                  {item.title}
-                </div>
-                {item.summary && (
-                  <div className={styles.playlistItemSummary}>
-                    {item.summary}
+          {playlist.map((item, index) => {
+            const videoItem = item as VideoSource;
+            return (
+              <div
+                key={index}
+                className={`${styles.playlistItem} ${index === currentIndex ? styles.active : ''}`}
+                onClick={() => handlePlaylistItemClick(index)}
+              >
+                {videoItem.poster ? (
+                  <img
+                    src={videoItem.poster}
+                    alt={videoItem.title}
+                    className={styles.playlistItemThumb}
+                  />
+                ) : (
+                  <div className={styles.playlistItemPlaceholder}>
+                    <VideoPlaceholderIcon />
                   </div>
                 )}
+                <div className={styles.playlistItemContent}>
+                  <div className={styles.playlistItemTitle}>
+                    {videoItem.title}
+                  </div>
+                  {videoItem.summary && (
+                    <div className={styles.playlistItemSummary}>
+                      {videoItem.summary}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

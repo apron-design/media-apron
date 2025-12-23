@@ -7,4 +7,4 @@ export { Video } from './components/Video';
 export type { VideoProps, VideoSource } from './components/Video';
 
 export { Audio } from './components/Audio';
-export type { AudioProps } from './components/Audio';
+export type { AudioProps, AudioSource } from './components/Audio';

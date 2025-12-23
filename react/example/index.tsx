@@ -1,14 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Video } from '../src';
+import { Audio } from '../src';
 
-// 示例 1: 单个视频
+// 示例 1: 单个视频（带字幕）
 const SingleVideoExample = () => {
   return (
     <div className="video-wrapper">
       <Video
         src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
         poster="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
+        cc="./subtitles.vtt"
       />
     </div>
   );
@@ -29,14 +31,15 @@ const PlaylistSimpleExample = () => {
   );
 };
 
-// 示例 3: 播放列表（完整模式）
+// 示例 3: 播放列表（完整模式，带字幕）
 const PlaylistFullExample = () => {
   const playlist = [
     {
-      title: '正在播放的视频标题',
-      summary: '视频摘要，没有可以不显示',
+      title: '正在播放的视频标题（带字幕）',
+      summary: '视频摘要，没有可以不显示。点击设置按钮可以开关字幕。',
       poster: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg',
       url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+      cc: './subtitles.vtt',
     },
     {
       title: '下一个要播放的视频标题',
@@ -75,5 +78,98 @@ if (playlistSimpleRoot) {
 const playlistFullRoot = document.getElementById('playlist-full');
 if (playlistFullRoot) {
   ReactDOM.createRoot(playlistFullRoot).render(<PlaylistFullExample />);
+}
+
+// Audio 组件示例
+// 示例 1: 单个音频（无封面）
+const SingleAudioExample = () => {
+  return (
+    <div className="audio-wrapper">
+      <Audio
+        src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+      />
+    </div>
+  );
+};
+
+// 示例 2: 单个音频（有封面）
+const SingleAudioWithPosterExample = () => {
+  return (
+    <div className="audio-wrapper">
+      <Audio
+        src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+        poster="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
+        primaryColor="#1890ff"
+      />
+    </div>
+  );
+};
+
+// 示例 3: 播放列表（简单模式）
+const AudioPlaylistSimpleExample = () => {
+  const playlist = [
+    'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+    'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+    'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+  ];
+
+  return (
+    <div className="audio-wrapper">
+      <Audio source={playlist} />
+    </div>
+  );
+};
+
+// 示例 4: 播放列表（完整模式）
+const AudioPlaylistFullExample = () => {
+  const playlist = [
+    {
+      title: '第一首歌曲',
+      summary: '这是第一首歌曲的简介',
+      poster: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+    },
+    {
+      title: '第二首歌曲',
+      summary: '这是第二首歌曲的简介',
+      poster: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ElephantsDream.jpg',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+    },
+    {
+      title: '第三首歌曲（无封面）',
+      summary: '没有封面的歌曲会显示背景色',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+    },
+  ];
+
+  return (
+    <div className="audio-wrapper">
+      <Audio
+        source={playlist}
+        primaryColor="#1890ff"
+      />
+    </div>
+  );
+};
+
+// 渲染 Audio 示例
+const singleAudioRoot = document.getElementById('single-audio');
+if (singleAudioRoot) {
+  ReactDOM.createRoot(singleAudioRoot).render(<SingleAudioExample />);
+}
+
+const singleAudioWithPosterRoot = document.getElementById('single-audio-poster');
+if (singleAudioWithPosterRoot) {
+  ReactDOM.createRoot(singleAudioWithPosterRoot).render(<SingleAudioWithPosterExample />);
+}
+
+const audioPlaylistSimpleRoot = document.getElementById('audio-playlist-simple');
+if (audioPlaylistSimpleRoot) {
+  ReactDOM.createRoot(audioPlaylistSimpleRoot).render(<AudioPlaylistSimpleExample />);
+}
+
+const audioPlaylistFullRoot = document.getElementById('audio-playlist-full');
+if (audioPlaylistFullRoot) {
+  ReactDOM.createRoot(audioPlaylistFullRoot).render(<AudioPlaylistFullExample />);
 }
 

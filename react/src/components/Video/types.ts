@@ -31,6 +31,11 @@ export interface VideoProps extends Omit<VideoHTMLAttributes<HTMLVideoElement>, 
   src?: string;
   
   /**
+   * 字幕文件 URL（配合 src 使用）
+   */
+  cc?: string;
+  
+  /**
    * 播放源列表
    * - string: 单个视频 URL，等同于 src
    * - string[]: 播放列表，每项为视频 URL
