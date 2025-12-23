@@ -9,7 +9,7 @@ Media Apron 是 Apron Design 的分支项目，专注于提供高质量的媒体
 ## 包
 
 - `@media-apron/react` - React 版本
-- `@media-apron/vue` - Vue 3 版本
+- `@media-apron/vue-next` - Vue 3 版本
 
 ## 组件
 
