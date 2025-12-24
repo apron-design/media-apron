@@ -1,20 +1,6 @@
-# Media Apron - Vue
+# @media-apron/vue
 
-媒体播放组件库 Vue 3 版本 - Apron Design 分支项目
-
-## 简介
-
-Media Apron 是一个专注于媒体播放的组件库，提供 Video 和 Audio 两个核心组件。
-
-## 组件
-
-### Video
-
-视频播放组件
-
-### Audio
-
-音频播放组件
+媒体播放组件库 Vue 3 版本 - Apron Design 的分支项目
 
 ## 安装
 
@@ -25,35 +11,37 @@ npm install @media-apron/vue
 ## 使用
 
 ```vue
-<template>
-  <div>
-    <Video src="video.mp4" controls />
-    <Audio src="audio.mp3" controls />
-  </div>
-</template>
-
-<script setup>
+<script setup lang="ts">
 import { Video, Audio } from '@media-apron/vue';
+import '@media-apron/vue/dist/style.css';
 </script>
+
+<template>
+  <Video
+    src="video.mp4"
+    poster="poster.jpg"
+    cc="subtitles.vtt"
+  />
+
+  <Audio
+    src="audio.mp3"
+    poster="cover.jpg"
+    lyrics="lyrics.lrc"
+  />
+</template>
 ```
 
-## 开发
+## 功能特性
 
-```bash
-# 安装依赖
-npm install
-
-# 开发模式
-npm run dev
-
-# 构建
-npm run build
-
-# 类型检查
-npm run type-check
-```
+- ✅ Video 组件：完整的视频播放控制
+- ✅ Audio 组件：音频播放 + LRC 歌词支持
+- ✅ 播放列表支持
+- ✅ 自定义主题色
+- ✅ 沉浸模式和全屏模式
+- ✅ CC 字幕支持（Video）
+- ✅ 滚动歌词支持（Audio）
+- ✅ TypeScript 类型完整支持
 
 ## License
 
 MIT
-
