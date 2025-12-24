@@ -1,13 +1,21 @@
 /// <reference types="vite/client" />
 
-declare module '*.svg' {
+declare module '*.module.scss' {
+  const classes: { [key: string]: string };
+  export default classes;
+}
+
+declare module '*.module.css' {
+  const classes: { [key: string]: string };
+  export default classes;
+}
+
+declare module '*.scss' {
   const content: string;
   export default content;
 }
 
-declare module '*.svg?react' {
-  import { FunctionComponent, SVGProps } from 'react';
-  const content: FunctionComponent<SVGProps<SVGSVGElement>>;
+declare module '*.css' {
+  const content: string;
   export default content;
 }
-

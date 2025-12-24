@@ -12,6 +12,8 @@ export interface AudioSource {
   poster?: string;
   /** 音频 URL */
   url: string;
+  /** 歌词文件 URL (LRC 格式) */
+  lyrics?: string;
 }
 
 /**
@@ -39,6 +41,11 @@ export interface AudioProps extends Omit<AudioHTMLAttributes<HTMLAudioElement>, 
    * 封面图（当使用 src 时）
    */
   poster?: string;
+  
+  /**
+   * 歌词文件 URL（当使用 src 时，LRC 格式）
+   */
+  lyrics?: string;
   
   /**
    * 主题色（进度条颜色）

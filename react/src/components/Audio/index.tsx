@@ -1,6 +1,6 @@
 import React, { forwardRef, useRef, useState, useEffect, useCallback } from 'react';
 import { AudioProps, AudioSource } from './types';
-import styles from './Audio.module.css';
+import './Audio.scss';
 import {
   PlayIcon,
   PauseIcon,
@@ -8,6 +8,7 @@ import {
   NextIcon,
   VolumeIcon,
 } from './icons';
+import { parseLrc, getCurrentLrcIndex, LrcLine } from './lrcParser';
 
 /**
  * Audio 组件 - 媒体播放器的音频组件
@@ -19,6 +20,7 @@ export const Audio = forwardRef<HTMLAudioElement, AudioProps>((props, ref) => {
     src,
     source,
     poster,
+    lyrics,
     primaryColor = '#333333',
     style,
     ...restProps
@@ -38,6 +40,8 @@ export const Audio = forwardRef<HTMLAudioElement, AudioProps>((props, ref) => {
   const [isMuted, setIsMuted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [lrcLines, setLrcLines] = useState<LrcLine[]>([]);
+  const lyricsContainerRef = useRef<HTMLDivElement>(null);
 
   // 解析播放列表
   const playlist = React.useMemo(() => {
@@ -85,6 +89,14 @@ export const Audio = forwardRef<HTMLAudioElement, AudioProps>((props, ref) => {
     const current = playlist[currentIndex];
     return (current as AudioSource)?.poster;
   }, [poster, playlist, currentIndex]);
+
+  // 获取当前歌词 URL
+  const currentLyrics = React.useMemo(() => {
+    if (src && lyrics) return lyrics; // 优先使用 props.lyrics（当使用 src 时）
+    if (!playlist) return undefined;
+    const current = playlist[currentIndex];
+    return (current as AudioSource)?.lyrics;
+  }, [src, lyrics, playlist, currentIndex]);
 
   // 判断是否有封面
   const hasPoster = !!currentPoster;
@@ -190,6 +202,50 @@ export const Audio = forwardRef<HTMLAudioElement, AudioProps>((props, ref) => {
     hoverIndicator.style.opacity = '0';
   }, []);
 
+  // 加载歌词
+  useEffect(() => {
+    if (!currentLyrics) {
+      setLrcLines([]);
+      return;
+    }
+
+    fetch(currentLyrics)
+      .then(res => res.text())
+      .then(text => {
+        const lines = parseLrc(text);
+        setLrcLines(lines);
+      })
+      .catch(err => {
+        console.error('Failed to load lyrics:', err);
+        setLrcLines([]);
+      });
+  }, [currentLyrics]);
+
+  // 计算当前歌词索引
+  const currentLrcIndex = React.useMemo(() => {
+    return getCurrentLrcIndex(lrcLines, currentTime);
+  }, [lrcLines, currentTime]);
+
+  // 自动滚动歌词到当前行
+  useEffect(() => {
+    if (currentLrcIndex < 0 || !lyricsContainerRef.current) return;
+
+    const container = lyricsContainerRef.current;
+    const currentLine = container.children[currentLrcIndex] as HTMLElement;
+    
+    if (currentLine) {
+      const containerHeight = container.clientHeight;
+      const lineTop = currentLine.offsetTop;
+      const lineHeight = currentLine.clientHeight;
+      
+      // 滚动到当前歌词行居中
+      container.scrollTo({
+        top: lineTop - containerHeight / 2 + lineHeight / 2,
+        behavior: 'smooth'
+      });
+    }
+  }, [currentLrcIndex]);
+
   // 音频事件监听
   useEffect(() => {
     const audio = audioRef.current;
@@ -252,19 +308,35 @@ export const Audio = forwardRef<HTMLAudioElement, AudioProps>((props, ref) => {
   return (
     <div
       ref={containerRef}
-      className={`${styles.audioContainer} ${hasPoster ? styles.withPoster : ''} ${className || ''}`}
+      className={`media-apron-audio ${hasPoster ? 'with-poster' : ''} ${className || ''}`}
       style={{
         ...style,
         '--primary-color': primaryColor,
       } as React.CSSProperties}
     >
       {hasPoster && (
-        <div className={styles.posterContainer}>
+        <div className="media-apron-audio-poster-container">
           <img
             src={currentPoster}
             alt="音频封面"
-            className={styles.poster}
+            className="media-apron-audio-poster"
           />
+        </div>
+      )}
+
+      {lrcLines.length > 0 && (
+        <div
+          ref={lyricsContainerRef}
+          className={`media-apron-audio-lyrics-container ${hasPoster ? 'with-poster' : ''}`}
+        >
+          {lrcLines.map((line, index) => (
+            <div
+              key={index}
+              className={`media-apron-audio-lyrics-line ${index === currentLrcIndex ? 'active' : ''}`}
+            >
+              {line.text}
+            </div>
+          ))}
         </div>
       )}
 
@@ -277,49 +349,49 @@ export const Audio = forwardRef<HTMLAudioElement, AudioProps>((props, ref) => {
             (ref as React.MutableRefObject<HTMLAudioElement | null>).current = el;
           }
         }}
-        className={styles.audio}
+        className="media-apron-audio-element"
         src={currentUrl}
       {...restProps}
     />
 
-      <div className={`${styles.loading} ${isLoading ? styles.visible : ''}`}>
-        <div className={styles.loadingSpinner} />
+      <div className={`media-apron-audio-loading ${isLoading ? 'visible' : ''}`}>
+        <div className="media-apron-audio-loading-spinner" />
       </div>
 
-      <div className={styles.controls}>
+      <div className="media-apron-audio-controls">
         <div
           ref={progressRef}
-          className={styles.progressContainer}
+          className="media-apron-audio-progress-container"
           onClick={handleProgressClick}
           onMouseMove={handleProgressMouseMove}
           onMouseLeave={handleProgressMouseLeave}
         >
-          <div className={styles.progressBackground} />
+          <div className="media-apron-audio-progress-background" />
           <div
             ref={progressPreviewRef}
-            className={styles.progressPreview}
+            className="media-apron-audio-progress-preview"
           />
           <div
-            className={styles.progressBar}
+            className="media-apron-audio-progress-bar"
             style={{ width: `${progress}%` }}
           />
           <div
             ref={progressHoverRef}
-            className={styles.progressHover}
+            className="media-apron-audio-progress-hover"
           />
         </div>
 
-        <div className={styles.controlsBottom}>
-          <div className={styles.controlsLeft}>
-            <div className={styles.timeDisplay}>
+        <div className="media-apron-audio-controls-bottom">
+          <div className="media-apron-audio-controls-left">
+            <div className="media-apron-audio-time-display">
               {formatTime(currentTime)} / {formatTime(duration)}
             </div>
           </div>
 
-          <div className={styles.controlsCenter}>
+          <div className="media-apron-audio-controls-center">
             {playlist && playlist.length > 1 && (
               <button
-                className={`${styles.button} ${styles.playButton}`}
+                className="media-apron-audio-button media-apron-audio-play-button"
                 onClick={playPrev}
                 disabled={currentIndex <= 0}
                 title="上一首"
@@ -329,7 +401,7 @@ export const Audio = forwardRef<HTMLAudioElement, AudioProps>((props, ref) => {
             )}
 
             <button
-              className={`${styles.button} ${styles.playButton} ${isPlaying ? styles.active : ''}`}
+              className={`media-apron-audio-button media-apron-audio-play-button ${isPlaying ? 'active' : ''}`}
               onClick={togglePlay}
               title={isPlaying ? '暂停' : '播放'}
             >
@@ -338,7 +410,7 @@ export const Audio = forwardRef<HTMLAudioElement, AudioProps>((props, ref) => {
 
             {playlist && playlist.length > 1 && (
               <button
-                className={`${styles.button} ${styles.playButton}`}
+                className="media-apron-audio-button media-apron-audio-play-button"
                 onClick={playNext}
                 disabled={currentIndex >= playlist.length - 1}
                 title="下一首"
@@ -348,23 +420,23 @@ export const Audio = forwardRef<HTMLAudioElement, AudioProps>((props, ref) => {
             )}
           </div>
 
-          <div className={styles.controlsRight}>
-            <div className={styles.volumeContainer}>
-              <span className={styles.volumeValue}>
+          <div className="media-apron-audio-controls-right">
+            <div className="media-apron-audio-volume-container">
+              <span className="media-apron-audio-volume-value">
                 {isMuted ? '静音' : `${volume}%`}
               </span>
-              <div className={styles.volumeSliderContainer}>
+              <div className="media-apron-audio-volume-slider-container">
                 <input
                   type="range"
                   min="0"
                   max="100"
                   value={volume}
                   onChange={handleVolumeChange}
-                  className={styles.volumeSlider}
+                  className="media-apron-audio-volume-slider"
                 />
               </div>
               <button
-                className={`${styles.button} ${styles.iconButton}`}
+                className="media-apron-audio-button media-apron-audio-icon-button"
                 onClick={toggleMute}
                 title={isMuted ? '取消静音' : '静音'}
               >

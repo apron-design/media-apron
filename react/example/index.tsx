@@ -92,13 +92,26 @@ const SingleAudioExample = () => {
   );
 };
 
-// 示例 2: 单个音频（有封面）
+// 示例 1.5: 单个音频（无封面 + 歌词）
+const SingleAudioWithLyricsExample = () => {
+  return (
+    <div className="audio-wrapper">
+      <Audio
+        src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+        lyrics="./lyrics.lrc"
+      />
+    </div>
+  );
+};
+
+// 示例 2: 单个音频（有封面和歌词）
 const SingleAudioWithPosterExample = () => {
   return (
     <div className="audio-wrapper">
       <Audio
         src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
         poster="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
+        lyrics="./lyrics.lrc"
         primaryColor="#1890ff"
       />
     </div>
@@ -120,14 +133,15 @@ const AudioPlaylistSimpleExample = () => {
   );
 };
 
-// 示例 4: 播放列表（完整模式）
+// 示例 4: 播放列表（完整模式，带歌词）
 const AudioPlaylistFullExample = () => {
   const playlist = [
     {
-      title: '第一首歌曲',
-      summary: '这是第一首歌曲的简介',
+      title: '第一首歌曲（带歌词）',
+      summary: '这是第一首歌曲的简介，支持歌词显示',
       poster: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg',
       url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+      lyrics: './lyrics.lrc',
     },
     {
       title: '第二首歌曲',
@@ -156,6 +170,11 @@ const AudioPlaylistFullExample = () => {
 const singleAudioRoot = document.getElementById('single-audio');
 if (singleAudioRoot) {
   ReactDOM.createRoot(singleAudioRoot).render(<SingleAudioExample />);
+}
+
+const singleAudioWithLyricsRoot = document.getElementById('single-audio-lyrics');
+if (singleAudioWithLyricsRoot) {
+  ReactDOM.createRoot(singleAudioWithLyricsRoot).render(<SingleAudioWithLyricsExample />);
 }
 
 const singleAudioWithPosterRoot = document.getElementById('single-audio-poster');

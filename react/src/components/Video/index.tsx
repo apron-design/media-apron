@@ -1,6 +1,6 @@
 import React, { forwardRef, useRef, useState, useEffect, useCallback } from 'react';
 import { VideoProps, VideoSource } from './types';
-import styles from './Video.module.css';
+import './Video.scss';
 import {
   PlayIcon,
   PauseIcon,
@@ -427,7 +427,7 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
   return (
     <div
       ref={containerRef}
-      className={`${styles.videoContainer} ${isImmersive ? styles.immersive : ''} ${!showControls ? styles.controlsHidden : ''} ${className || ''}`}
+      className={`media-apron-video ${isImmersive ? 'immersive' : ''} ${!showControls ? 'controls-hidden' : ''} ${className || ''}`}
       style={{
         ...style,
         '--primary-color': primaryColor,
@@ -442,7 +442,7 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
             (ref as React.MutableRefObject<HTMLVideoElement | null>).current = el;
           }
         }}
-        className={styles.video}
+        className="media-apron-video-element"
         src={currentUrl}
         onClick={togglePlay}
         {...restProps}
@@ -458,37 +458,37 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
         )}
       </video>
 
-      <div className={`${styles.loading} ${isLoading ? styles.visible : ''}`}>
-        <div className={styles.loadingSpinner} />
+      <div className={`media-apron-video-loading ${isLoading ? 'visible' : ''}`}>
+        <div className="media-apron-video-loading-spinner" />
       </div>
 
-      <div className={`${styles.controls} ${!showControls ? styles.hidden : ''}`}>
+      <div className={`media-apron-video-controls ${!showControls ? 'hidden' : ''}`}>
         <div
           ref={progressRef}
-          className={styles.progressContainer}
+          className="media-apron-video-progress-container"
           onClick={handleProgressClick}
           onMouseMove={handleProgressMouseMove}
           onMouseLeave={handleProgressMouseLeave}
         >
-          <div className={styles.progressBackground} />
+          <div className="media-apron-video-progress-background" />
           <div
             ref={progressPreviewRef}
-            className={styles.progressPreview}
+            className="media-apron-video-progress-preview"
           />
           <div
-            className={styles.progressBar}
+            className="media-apron-video-progress-bar"
             style={{ width: `${progress}%` }}
           />
           <div
             ref={progressHoverRef}
-            className={styles.progressHover}
+            className="media-apron-video-progress-hover"
           />
         </div>
 
-        <div className={styles.controlsBottom}>
-          <div className={styles.controlsLeft}>
+        <div className="media-apron-video-controls-bottom">
+          <div className="media-apron-video-controls-left">
             <button
-              className={`${styles.button} ${styles.playButton} ${isPlaying ? styles.active : ''}`}
+              className={`media-apron-video-button media-apron-video-play-button ${isPlaying ? 'active' : ''}`}
               onClick={togglePlay}
               title={isPlaying ? '暂停' : '播放'}
             >
@@ -497,7 +497,7 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
 
             {playlist && playlist.length > 1 && currentIndex < playlist.length - 1 && (
               <button
-                className={`${styles.button} ${styles.playButton}`}
+                className="media-apron-video-button media-apron-video-play-button"
                 onClick={playNext}
                 title="下一个"
               >
@@ -505,28 +505,28 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
               </button>
             )}
 
-            <div className={styles.timeDisplay}>
+            <div className="media-apron-video-time-display">
               {formatTime(currentTime)} / {formatTime(duration)}
             </div>
           </div>
 
-          <div className={styles.controlsRight}>
-            <div className={styles.volumeContainer}>
-              <span className={styles.volumeValue}>
+          <div className="media-apron-video-controls-right">
+            <div className="media-apron-video-volume-container">
+              <span className="media-apron-video-volume-value">
                 {isMuted ? '静音' : `${volume}%`}
               </span>
-              <div className={styles.volumeSliderContainer}>
+              <div className="media-apron-video-volume-slider-container">
                 <input
                   type="range"
                   min="0"
                   max="100"
                   value={volume}
                   onChange={handleVolumeChange}
-                  className={styles.volumeSlider}
+                  className="media-apron-video-volume-slider"
                 />
               </div>
               <button
-                className={`${styles.button} ${styles.iconButton}`}
+                className="media-apron-video-button media-apron-video-icon-button"
                 onClick={toggleMute}
                 title={isMuted ? '取消静音' : '静音'}
               >
@@ -536,17 +536,17 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
 
             <div style={{ position: 'relative' }}>
               <button
-                className={`${styles.button} ${styles.iconButton}`}
+                className="media-apron-video-button media-apron-video-icon-button"
                 onClick={() => setShowSettings(!showSettings)}
                 title="设置"
               >
                 <SettingsIcon />
               </button>
 
-              <div className={`${styles.settingsMenu} ${showSettings ? styles.visible : ''}`}>
+              <div className={`media-apron-video-settings-menu ${showSettings ? 'visible' : ''}`}>
                 {currentCC && (
                   <div
-                    className={`${styles.menuItem} ${showSubtitles ? styles.selected : ''}`}
+                    className={`media-apron-video-menu-item ${showSubtitles ? 'selected' : ''}`}
                     onClick={toggleSubtitles}
                   >
                     CC 字幕 {showSubtitles ? '✓' : ''}
@@ -558,7 +558,7 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
                 {[0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map(rate => (
                   <div
                     key={rate}
-                    className={`${styles.menuItem} ${playbackRate === rate ? styles.selected : ''}`}
+                    className={`media-apron-video-menu-item ${playbackRate === rate ? 'selected' : ''}`}
                     onClick={() => handlePlaybackRateChange(rate)}
                   >
                     {rate}x
@@ -569,7 +569,7 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
 
             {playlist && playlist.length > 0 && (
               <button
-                className={`${styles.button} ${styles.iconButton}`}
+                className="media-apron-video-button media-apron-video-icon-button"
                 onClick={() => setShowPlaylist(!showPlaylist)}
                 title="播放列表"
               >
@@ -579,7 +579,7 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
 
             <button
               key={isImmersive ? 'exit-immersive' : 'immersive'}
-              className={`${styles.button} ${styles.iconButton}`}
+              className="media-apron-video-button media-apron-video-icon-button"
               onClick={toggleImmersive}
               title={isImmersive ? '退出沉浸模式' : '沉浸模式'}
             >
@@ -587,7 +587,7 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
             </button>
 
             <button
-              className={`${styles.button} ${styles.iconButton}`}
+              className="media-apron-video-button media-apron-video-icon-button"
               onClick={toggleFullscreen}
               title="全屏"
             >
@@ -600,14 +600,14 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
       {/* 播放列表展开时的模糊遮罩 */}
       {playlist && playlist.length > 0 && showPlaylist && (
         <div 
-          className={styles.playlistOverlay}
+          className="media-apron-video-playlist-overlay"
           onClick={() => setShowPlaylist(false)}
         />
       )}
 
       {playlist && playlist.length > 0 && (
-        <div className={`${styles.playlist} ${showPlaylist ? styles.visible : ''}`}>
-          <div className={styles.playlistHeader}>
+        <div className={`media-apron-video-playlist ${showPlaylist ? 'visible' : ''}`}>
+          <div className="media-apron-video-playlist-header">
             播放列表
           </div>
           {playlist.map((item, index) => {
@@ -615,26 +615,26 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
             return (
               <div
                 key={index}
-                className={`${styles.playlistItem} ${index === currentIndex ? styles.active : ''}`}
+                className={`media-apron-video-playlist-item ${index === currentIndex ? 'active' : ''}`}
                 onClick={() => handlePlaylistItemClick(index)}
               >
                 {videoItem.poster ? (
                   <img
                     src={videoItem.poster}
                     alt={videoItem.title}
-                    className={styles.playlistItemThumb}
+                    className="media-apron-video-playlist-item-thumb"
                   />
                 ) : (
-                  <div className={styles.playlistItemPlaceholder}>
+                  <div className="media-apron-video-playlist-item-placeholder">
                     <VideoPlaceholderIcon />
                   </div>
                 )}
-                <div className={styles.playlistItemContent}>
-                  <div className={styles.playlistItemTitle}>
+                <div className="media-apron-video-playlist-item-content">
+                  <div className="media-apron-video-playlist-item-title">
                     {videoItem.title}
                   </div>
                   {videoItem.summary && (
-                    <div className={styles.playlistItemSummary}>
+                    <div className="media-apron-video-playlist-item-summary">
                       {videoItem.summary}
                     </div>
                   )}

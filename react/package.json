@@ -1,6 +1,6 @@
 {
   "name": "@media-apron/react",
-  "version": "26.0.0",
+  "version": "26.0.1",
   "description": "Media player components for React - A branch project of Apron Design",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -48,8 +48,8 @@
     "@vitejs/plugin-react": "^4.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "sass": "^1.97.1",
     "typescript": "^5.0.0",
     "vite": "^5.0.0"
   }
 }
-
