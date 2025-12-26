@@ -129,6 +129,7 @@
   background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
   transition: opacity 0.3s ease, transform 0.3s ease;
   z-index: 5;
+  box-sizing: border-box;
 
   &.hidden {
     opacity: 0;
@@ -219,18 +220,21 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-sizing: border-box;
 }
 
 .media-apron-video-controls-left {
   display: flex;
   align-items: center;
   gap: 8px;
+  box-sizing: border-box;
 }
 
 .media-apron-video-controls-right {
   display: flex;
   align-items: center;
   gap: 8px;
+  box-sizing: border-box;
 }
 
 .media-apron-video-button {
