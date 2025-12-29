@@ -1,6 +1,6 @@
 {
   "name": "@media-apron/react",
-  "version": "26.0.2",
+  "version": "26.0.3",
   "description": "Media player components for React - A branch project of Apron Design",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",

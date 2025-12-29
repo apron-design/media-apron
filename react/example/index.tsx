@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { Video } from '../src';
 import { Audio } from '../src';
 
-// 示例 1: 单个视频（带字幕）
+// 示例 1: 单个视频（带 WebVTT 字幕）
 const SingleVideoExample = () => {
   return (
     <div className="video-wrapper">
@@ -11,6 +11,19 @@ const SingleVideoExample = () => {
         src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
         poster="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
         cc="./subtitles.vtt"
+      />
+    </div>
+  );
+};
+
+// 示例 1.5: 单个视频（带 SRT 字幕）
+const SingleVideoWithSrtExample = () => {
+  return (
+    <div className="video-wrapper">
+      <Video
+        src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+        poster="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
+        cc="./subtitles.srt"
       />
     </div>
   );

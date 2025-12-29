@@ -72,9 +72,15 @@
     <p class="subtitle">媒体播放组件库示例 - Apron Design 分支项目</p>
 
     <div class="section">
-      <h2>单个视频（带 CC 字幕）</h2>
-      <p>使用 src 属性指定视频源，cc 属性添加字幕。点击设置按钮（⚙️）可以开关字幕。</p>
+      <h2>单个视频（带 WebVTT 字幕）</h2>
+      <p>使用 src 属性指定视频源，cc 属性添加 WebVTT 格式字幕。点击设置按钮（⚙️）可以开关字幕。</p>
       <div id="single-video"></div>
+    </div>
+
+    <div class="section">
+      <h2>单个视频（带 SRT 字幕）</h2>
+      <p>使用 src 属性指定视频源，cc 属性添加 SRT 格式字幕。SRT 格式会自动转换为 WebVTT 格式。点击设置按钮（⚙️）可以开关字幕。</p>
+      <div id="single-video-srt"></div>
     </div>
 
     <div class="section">

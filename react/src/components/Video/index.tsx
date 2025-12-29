@@ -1,5 +1,6 @@
 import React, { forwardRef, useRef, useState, useEffect, useCallback } from 'react';
 import { VideoProps, VideoSource } from './types';
+import { isSrtFile, loadSrtAsWebVtt } from './srtParser';
 import './Video.scss';
 import {
   PlayIcon,
@@ -50,6 +51,8 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [showSubtitles, setShowSubtitles] = useState(true);
+  const [convertedSubtitleUrl, setConvertedSubtitleUrl] = useState<string | null>(null);
+  const subtitleBlobUrlRef = useRef<string | null>(null);
 
   // 解析播放列表
   const playlist = React.useMemo(() => {
@@ -108,6 +111,44 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
     const current = playlist[currentIndex];
     return (current as VideoSource)?.cc;
   }, [src, cc, playlist, currentIndex]);
+
+  // 处理 SRT 字幕转换
+  useEffect(() => {
+    // 清理之前的 Blob URL
+    if (subtitleBlobUrlRef.current) {
+      URL.revokeObjectURL(subtitleBlobUrlRef.current);
+      subtitleBlobUrlRef.current = null;
+    }
+    setConvertedSubtitleUrl(null);
+
+    if (!currentCC) return;
+
+    // 检查是否为 SRT 文件
+    if (isSrtFile(currentCC)) {
+      // 加载并转换 SRT 为 WebVTT
+      loadSrtAsWebVtt(currentCC)
+        .then((blobUrl) => {
+          subtitleBlobUrlRef.current = blobUrl;
+          setConvertedSubtitleUrl(blobUrl);
+        })
+        .catch((error) => {
+          console.error('Failed to convert SRT to WebVTT:', error);
+          // 转换失败时，尝试使用原始 URL（可能浏览器支持）
+          setConvertedSubtitleUrl(currentCC);
+        });
+    } else {
+      // 非 SRT 文件，直接使用原始 URL
+      setConvertedSubtitleUrl(currentCC);
+    }
+
+    // 清理函数
+    return () => {
+      if (subtitleBlobUrlRef.current) {
+        URL.revokeObjectURL(subtitleBlobUrlRef.current);
+        subtitleBlobUrlRef.current = null;
+      }
+    };
+  }, [currentCC]);
 
   // 格式化时间
   const formatTime = (seconds: number) => {
@@ -392,7 +433,7 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
   // 控制字幕显示/隐藏
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !currentCC) return;
+    if (!video || !convertedSubtitleUrl) return;
 
     const setupSubtitles = () => {
       const textTracks = video.textTracks;
@@ -420,7 +461,7 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
     return () => {
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
     };
-  }, [showSubtitles, currentCC, currentIndex]);
+  }, [showSubtitles, convertedSubtitleUrl, currentIndex]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -447,10 +488,10 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
         onClick={togglePlay}
         {...restProps}
       >
-        {currentCC && (
+        {convertedSubtitleUrl && (
           <track
             kind="subtitles"
-            src={currentCC}
+            src={convertedSubtitleUrl}
             srcLang="zh"
             label="中文字幕"
             default={showSubtitles}
@@ -544,7 +585,7 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
               </button>
 
               <div className={`media-apron-video-settings-menu ${showSettings ? 'visible' : ''}`}>
-                {currentCC && (
+                {convertedSubtitleUrl && (
                   <div
                     className={`media-apron-video-menu-item ${showSubtitles ? 'selected' : ''}`}
                     onClick={toggleSubtitles}
