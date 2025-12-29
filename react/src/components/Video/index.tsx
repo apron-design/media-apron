@@ -23,7 +23,7 @@ export const Video = forwardRef<HTMLVideoElement, VideoProps>((props, ref) => {
     src,
     cc,
     source,
-    primaryColor = '#333333',
+    primaryColor = '#1890ff',
     style,
     ...restProps
   } = props;

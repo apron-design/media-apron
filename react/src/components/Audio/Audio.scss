@@ -139,7 +139,6 @@
   height: 8px;
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   border-radius: 4px;
 }
 
@@ -385,7 +384,6 @@
     bottom: 0;
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
   }
 
   &::before,

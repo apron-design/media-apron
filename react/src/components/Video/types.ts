@@ -45,7 +45,7 @@ export interface VideoProps extends Omit<VideoHTMLAttributes<HTMLVideoElement>, 
   
   /**
    * 主题色（进度条颜色）
-   * @default '#333333'
+   * @default '#1890ff'
    */
   primaryColor?: string;
 }
